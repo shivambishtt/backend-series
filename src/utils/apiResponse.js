@@ -6,4 +6,4 @@ class apiResponse {
             this.success = resStatus < 400
     }
 }
-export { apiResponse }
+export default apiResponse

@@ -1,11 +1,11 @@
 class apiError extends Error {
-    constructor(errStatus, errName = [], errMessage = "Something went wrong", stack = "") {
+    constructor(errStatus, errMessage = "Something went wrong", errors = [], stack = "") {
         super(errMessage)
-        this.errStatus = errStatus
-        this.data = null
-        this.errMessage = errMessage
-        this.success = false
-        this.errName = errName
+        this.errStatus = errStatus,
+            this.errMessage = errMessage,
+            this.data = null,
+            this.errors = errors,
+            this.success = false;
 
         if (stack) {
             this.stack = stack
@@ -15,4 +15,4 @@ class apiError extends Error {
     }
 
 }
-export { apiError }
+export default apiError

@@ -2,7 +2,6 @@ import { v2 as cloudinary } from 'cloudinary';
 import fs from "fs"
 
 
-// We can upload the image in the following 2 ways and both are correct
 // (async function (filepath) {
 //     cloudinary.config({
 //         cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -22,7 +21,7 @@ import fs from "fs"
 //     console.log(uploadResult);
 // })("/img");
 
-
+// Cloudinary file upload
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
@@ -30,16 +29,17 @@ cloudinary.config({
 })
 const uploadResult = async (filepath) => {
     try {
-        if (!filepath) throw new Error("Filepath not found !!")
+        if (!filepath) return null;// throw new Error("Filepath not found !!")
         const response = await cloudinary.uploader.upload(filepath, {
-            resource_type: auto,
+            resource_type: "auto"
         })
-        console.log(response.url);
-        return response
-    } catch (error) {
+        // console.log(response.url, "File has been uploaded to the cloudinary");
+        fs.unlinkSync(filepath)
+        return response;
+    }
+    catch (error) {
         fs.unlinkSync(filepath) //remove the locally saved temporary file as the upload operation got failed
+        return null;
     }
 }
-uploadResult("/img");
-
-export { uploadResult };
+export default uploadResult

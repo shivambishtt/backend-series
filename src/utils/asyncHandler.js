@@ -14,9 +14,11 @@
 // }
 
 
+
+// basically what is happening here is our asyncHandler is a HOF it has nothing but a try catch block
 const asyncHandler = (handlerFunc) => {
-    (req, res, next) => {
-        Promise.resolve(handlerFunc(req, res, next)).reject((err) => next(err))
+    return (req, res, next) => {
+        Promise.resolve(handlerFunc(req, res, next)).catch((err) => next(err))
     }
 };
 
