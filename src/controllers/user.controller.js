@@ -86,7 +86,6 @@ const registerUser = asyncHandler(async (req, res) => {
 
 })
 
-
 const loginUser = asyncHandler(async (req, res) => {
     const { email, username, password } = req.body
     if (!(username || email)) {
@@ -133,7 +132,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
 const logOutUser = asyncHandler(async (req, res) => {
     //here we wanted to logout the user but we did't had any value or refernce to call the user here so what we did is we designed auth.middleware and there we have written a method that will have access to user so now when we defined a route now we have access to that function jwtverify and also we will have access to the particular user
-    await User.findByIdAndUpdate(req.user._id,
+    const user = await User.findByIdAndUpdate(req.user._id,
         {
             $set: {
                 refreshToken: undefined
@@ -150,7 +149,7 @@ const logOutUser = asyncHandler(async (req, res) => {
     return res.status(200)
         .clearCookie("accessToken", options)
         .clearCookie("refreshToken", options)
-        .json(new apiResponse(200, {}, "User logged out"))
+        .json(new apiResponse(200, user, "User logged out"))
 }
 
 )
@@ -204,4 +203,126 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     }
 
 })
-export { registerUser, loginUser, logOutUser, refreshAccessToken }
+
+const changeCurrentPassword = asyncHandler(async (req, res) => {
+    // TODOS TO CHANGE CURRENT USER'S PASSWORD
+    // get the user details like email or username and id
+    // get the old password value
+    // re write the password field or update it
+    // save the updated field in db
+
+    const { oldPassword, newPassword } = req.body
+
+    const user = req.user?._id
+    if (!user) {
+        throw new apiError(401, "User not found")
+    }
+    const userDetails = await User.findById(user)
+    const isPasswordCorrect = await userDetails.isPasswordCorrect(oldPassword)
+
+    if (!isPasswordCorrect) {
+        throw new apiError(401, "You have changed the password")
+    }
+    userDetails.password = newPassword
+    await userDetails.save({ validateBeforeSave: false })
+
+    return res
+        .status(200, "Password changed successfully")
+        .json(new apiResponse
+            ("Succesfully done", 200, {}))
+})
+
+const getCurrentUser = asyncHandler(async (req, res) => {
+    // TODOS TO GET CURRENT USER
+    // req.body ={username} 
+    // we have to check whether this particular user exists in our database or not
+    // if the user exists we will simply send a response
+    // if it doesn't we will throw an error that it doesn't exist
+
+    // const { username } = req.body //sending the username
+    // const user = await User.find({ username })
+    // if (user.length === 0) {
+    //     throw new apiError(400, "User not found in db")
+    // }
+    // return res
+    //     .status(200)
+    //     .json(new apiResponse("User found ", 200, {}))
+
+    return res
+        .status(200)
+        .json(new apiResponse("Current User fetched ", 200, req.user))
+})
+
+const updateAccountDetails = asyncHandler(async (req, res) => {
+    const { fullName, email } = req.body
+    if (!(fullName || email)) {
+        throw new apiError(404, "Enter fields first")
+    }
+    const user = await User.findByIdAndUpdate(req.user?.id,
+        {
+            $set: {
+                fullName,
+                email
+            }
+        },
+        { new: true }
+    ).select("-password")
+
+    return res
+        .status(200)
+        .json(new apiResponse("Updated account details ",
+            200,
+            user))
+})
+
+
+const updateUserAvatar = asyncHandler(async (req, res) => {
+    // TODO to update avatar
+    // userid
+    // take avatar from the user
+    // multer middleware
+
+    const avatarLocalPath = req.file?.path
+    if (!avatarLocalPath) {
+        throw new apiError(404, "Avatar localpath not found")
+    }
+    const avatar = await uploadResult(avatarLocalPath)
+    if (!avatar.url) {
+        throw new apiError(404, "Avatar file is not in cloudinary")
+    }
+    await User.findByIdAndUpdate(req.user._id,
+        {
+            $set: {
+                avatar: avatar.url
+            }
+        },
+        {
+
+        }).select("-password")
+    return res
+        .status(200)
+        .json(new apiResponse("Avatar updated successfully", 200, res.user))
+})
+
+const updateUserCoverImage = asyncHandler(async (req, res) => {
+    const coverImageLocalPath = req.file?.path
+    if (!coverImageLocalPath) {
+        throw new apiError(404, "Cover image localpath not found")
+    }
+    const coverImage = await uploadResult(coverImageLocalPath)
+    if (!coverImage.url) {
+        throw new apiError(404, "Cover image file is not in cloudinary")
+    }
+    await User.findByIdAndUpdate(req.user._id,
+        {
+            $set: {
+                coverImage: coverImage.url
+            }
+        }, { new: true })
+        .select("-password")
+    return res
+        .status(200)
+        .json(new apiResponse("Cover image updated successfully", 200, res.user))
+})
+
+export { registerUser, loginUser, logOutUser, refreshAccessToken, changeCurrentPassword, getCurrentUser, updateAccountDetails, updateUserAvatar, updateUserCoverImage }
