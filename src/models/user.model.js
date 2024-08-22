@@ -1,4 +1,4 @@
-import mongoose from 'mongoose'
+import mongoose, { Schema } from 'mongoose'
 import jwt from "jsonwebtoken"
 import bcrypt from "bcrypt"
 // Access token and refresh token both serve the same purpose that is to authenticate and authorize
@@ -12,7 +12,7 @@ import bcrypt from "bcrypt"
 // console.log(secretKey);
 
 
-const userSchema = new mongoose.Schema({
+const userSchema = new Schema({
     username: {
         type: String,
         required: true,

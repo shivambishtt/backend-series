@@ -3,6 +3,7 @@ import apiError from "../utils/apiError.js"
 import apiResponse from "../utils/apiResponse.js"
 import { User } from "../models/user.model.js"
 import uploadResult from "../utils/cloudinary.js"
+import jwt from "jsonwebtoken"
 
 
 const generateAccessAndRefereshTokens = async (userId) => {
@@ -23,7 +24,7 @@ const generateAccessAndRefereshTokens = async (userId) => {
 }
 
 const registerUser = asyncHandler(async (req, res) => {
-    const { fullName, email, username, password } = req.body
+    const { fullName, email, username, password } = req.body //asking data from frontend or postman
     console.log("email: ", email);
 
     if (
@@ -88,8 +89,6 @@ const registerUser = asyncHandler(async (req, res) => {
 
 const loginUser = asyncHandler(async (req, res) => {
     const { email, username, password } = req.body
-    console.log(email);
-
     if (!(username || email)) {
         throw new apiError(400, "username or email is required")
     }
@@ -156,4 +155,53 @@ const logOutUser = asyncHandler(async (req, res) => {
 
 )
 
-export { registerUser, loginUser, logOutUser }
+const refreshAccessToken = asyncHandler(async (req, res) => {
+    // here we are doing incomingrefreshtoken to check whether our req is coming or not if it's not coming that means user doesn't have access to cookies.refreshToken and if he don't have access to it that means he is not loggied
+    const incomingRefreshToken = (req.cookies.refreshToken || req.body.refreshToken)
+    // console.log("Incoming refresh token", incomingRefreshToken);
+
+    if (!incomingRefreshToken) {
+        throw new apiError(401, "User is not Logged In")
+    }
+
+    try {
+        const decodedToken = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET)
+        // console.log("Decoded Token is ", decodedToken);
+
+
+        const user = await User.findById(decodedToken?._id)
+        // console.log("User is", user);
+
+
+        if (!user) {
+            throw new apiError(401, "Invalid refresh token")
+        }
+
+        if (incomingRefreshToken !== user?.refreshToken) {
+            throw new apiError(401, "Refresh token is expired")
+        }
+
+        const options = {
+            httpOnly: true,
+            secure: true,
+        }
+
+        const { accessToken, refreshToken } = await generateAccessAndRefereshTokens(user._id)
+        // console.log("Access token is ", accessToken, "New Refresh token is", refreshToken);
+
+        return res
+            .status(200)
+            .cookie("accessToken", accessToken, options)
+            .cookie("refreshToken", refreshToken, options)
+            .json(
+                new apiResponse(200,
+                    { accessToken, refreshToken },
+                    "Updated refresh and access token successfully")
+            )
+
+    } catch (error) {
+        throw new apiError(401, error?.message || "Invalid")
+    }
+
+})
+export { registerUser, loginUser, logOutUser, refreshAccessToken }
