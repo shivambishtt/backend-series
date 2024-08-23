@@ -135,8 +135,8 @@ const logOutUser = asyncHandler(async (req, res) => {
     //here we wanted to logout the user but we did't had any value or refernce to call the user here so what we did is we designed auth.middleware and there we have written a method that will have access to user so now when we defined a route now we have access to that function jwtverify and also we will have access to the particular user
     const user = await User.findByIdAndUpdate(req.user._id,
         {
-            $set: {
-                refreshToken: undefined
+            $unset: {
+                refreshToken: 1 // little fix here
             }
         },
         {
@@ -275,7 +275,6 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
             200,
             user))
 })
-
 
 const updateUserAvatar = asyncHandler(async (req, res) => {
     // TODO to update avatar
