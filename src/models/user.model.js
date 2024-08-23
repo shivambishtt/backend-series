@@ -42,10 +42,10 @@ const userSchema = new Schema({
         type: String,
     },
     watchHistory: [
-        // {
-        //     type: Schema.Types.ObjectId,
-        //     ref: "Video",
-        // }
+        {
+            type: Schema.Types.ObjectId,
+            ref: "Video",
+        }
     ],
     password: {
         type: String,
