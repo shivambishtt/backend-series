@@ -20,7 +20,11 @@ const publishAVideo = asyncHandler(async (req, res) => {
     const videoFileLocalPath = req.files?.videoFile[0]?.path;
     console.log("video file local path", videoFileLocalPath);
 
-    const thumbNailLocalPath = req.files?.thumbNail[0]?.path;
+    // const thumbNailLocalPath = req.files?.thumbNail[0]?.path;
+    let thumbNailLocalPath
+    if (req.files && Array.isArray(req.files.thumbNail) && req.files.thumbNail.length > 0) {
+        thumbNailLocalPath = req.files.thumbNail[0].path
+    }
 
     if (!videoFileLocalPath) {
         throw new apiError(401, "Video file local path not found")
@@ -52,8 +56,65 @@ const publishAVideo = asyncHandler(async (req, res) => {
 
     return res
         .status(200)
-        .json(new apiResponse("Uploaded the Video successfully", 200, res.user))
+        .json(new apiResponse("Uploaded the Video successfully", 200, createVideo))
 })
 
-export { publishAVideo }
+const getVideoById = asyncHandler(async (req, res) => {
+    // TODO: get the video id from the postman
+    // find the id in the database 
+    const { videoId } = req.params
+    if (!videoId) {
+        throw new apiError(401, "Video not given in request")
+    }
+    const video = await Video.findById(videoId) //when I was using the findById method and was passing the req.paramas.videoId it was throwing a cast error . Cast error occurs because in our mongoDB id is considered as object ID and the id I was entering didn't match so it throw an error
+    if (!video) {
+        throw new apiError(401, "Video not found in the database")
+    }
+    return res
+        .status(200)
+        .json(new apiResponse("Fetched the video by ID", 200, video))
+})
+
+const updateAVideo = asyncHandler(async (req, res) => {
+    // TODOS: To update a video
+    // Get the video id from the param you want to update
+    // Update the title/description anything you want
+    // Save the updated changes in the mongo database
+
+    const { videoId } = req.params
+    if (!videoId) {
+        throw new apiError(401, "Enter the videoId first")
+    }
+    const { title, description } = req.body
+    const video = await Video.findByIdAndUpdate(videoId,
+        {
+            $set: { title, description }
+        },
+        { new: true }
+    )
+
+    if (!video) {
+        throw new apiError(401, "Unexpected error occured")
+    }
+    return res
+        .status(200)
+        .json(new apiResponse("Video updated successfully", 200, video))
+})
+
+const deleteAVideo = asyncHandler(async (req, res) => {
+    const { videoId } = req.params
+    if (!videoId) {
+        throw new apiError(401, "Must enter the correct Video ID")
+    }
+
+    const video = await Video.findByIdAndDelete(videoId)
+    if (!video) {
+        throw new apiError(401, "Video not deleted")
+    }
+
+    return res
+        .status(200)
+        .json(new apiResponse("Deleted the video", 200, video))
+})
+export { publishAVideo, getVideoById, updateAVideo, deleteAVideo }
 
