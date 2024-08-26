@@ -3,8 +3,6 @@ import apiError from "../utils/apiError.js"
 import apiResponse from "../utils/apiResponse.js"
 import { Video } from "../models/video.model.js"
 import uploadResult from "../utils/cloudinary.js"
-import jwt from "jsonwebtoken"
-import mongoose from "mongoose"
 
 const publishAVideo = asyncHandler(async (req, res) => {
     // TODOS: get the data from postman
@@ -116,5 +114,28 @@ const deleteAVideo = asyncHandler(async (req, res) => {
         .status(200)
         .json(new apiResponse("Deleted the video", 200, video))
 })
-export { publishAVideo, getVideoById, updateAVideo, deleteAVideo }
+
+const toggleIsPublish = asyncHandler(async (req, res) => {
+    // TODOS: Toggle status of isPublished
+    // Video id of you want to toggle
+    // get the field and toggle it
+
+    const { videoId } = req.params
+    if (!videoId) {
+        throw new apiError(401, "Pleas enter the video ID first")
+    }
+
+    const video = await Video.findById(videoId)
+    if (!video) {
+        throw new apiError(401, "Could not find the ID in the datbase")
+    }
+    video.isPublished = !video.isPublished
+
+    await video.save()
+    return res
+        .status(200)
+        .json(new apiResponse("Toggled the isPublished field successfully", 200, video))
+})
+
+export { publishAVideo, getVideoById, updateAVideo, deleteAVideo, toggleIsPublish }
 

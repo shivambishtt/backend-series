@@ -18,7 +18,9 @@ app.use(cookieParser())
 // Routes decalaration
 import userRouter from './routes/user.routes.js';
 import videoRouter from './routes/video.routes.js'
+import commentRouter from './routes/comment.routes.js'
 app.use('/api/v1/users', userRouter) //https:localhost:9000/api/v1/users/register
 app.use('/api/v1/video', videoRouter) //https:localhost:9000/api/v1/video/upload
+app.use('/api/v1/comment', commentRouter) //https:localhost:9000/api/v1/video/upload
 
 export default app
