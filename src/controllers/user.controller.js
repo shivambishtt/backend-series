@@ -26,7 +26,6 @@ const generateAccessAndRefereshTokens = async (userId) => {
 
 const registerUser = asyncHandler(async (req, res) => {
     const { fullName, email, username, password } = req.body //asking data from frontend or postman
-    console.log("email: ", email);
 
     if (
         [fullName, email, username, password].some((field) => field?.trim() === "")
