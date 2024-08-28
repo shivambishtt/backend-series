@@ -82,7 +82,7 @@ const getUserTweet = asyncHandler(async (req, res) => {
             $lookup: {
                 from: "users",
                 localField: "owner",
-                foreignField: "_id",
+                foreignField: "_id", //user ki id
                 as: "ownerDetails",
                 pipeline: [
                     {
@@ -98,7 +98,7 @@ const getUserTweet = asyncHandler(async (req, res) => {
             $lookup: {
                 from: "likes",
                 localField: "_id",
-                foreignField: "tweet",
+                foreignField: "tweet", //like ki id milegi
                 as: "likeDetails",
                 pipeline: [
                     {
@@ -112,7 +112,7 @@ const getUserTweet = asyncHandler(async (req, res) => {
         {
             $addFields: {
                 likesCount: {
-                    $size: "$likeDetails",
+                    $size: "$likeDetails", //hum yahan calculate kar rahe hain ki humara likes count kitna hai basically size jo hai wo hume btata hai ki array ka size ya length kitni hai
                 },
                 ownerDetails: {
                     $first: "$ownerDetails",
