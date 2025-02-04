@@ -16,11 +16,11 @@
 
 
 // basically what is happening here is our asyncHandler is a HOF it has nothing but a try catch block
-const asyncHandler = (handlerFunc) => {
-    return (req, res, next) => {
-        Promise.resolve(handlerFunc(req, res, next)).catch((err) => next(err))
-    }
-};
+    const asyncHandler = (handlerFunc) => {
+        return (req, res, next) => {
+            Promise.resolve(handlerFunc(req, res, next)).catch((err) => next(err))
+        }
+    };
 
 
 export default asyncHandler
